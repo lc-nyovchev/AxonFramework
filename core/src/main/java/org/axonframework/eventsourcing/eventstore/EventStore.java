@@ -14,6 +14,10 @@
 package org.axonframework.eventsourcing.eventstore;
 
 import org.axonframework.eventhandling.EventBus;
+import org.axonframework.eventsourcing.DomainEventMessage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides a mechanism to load events from the underlying event storage.
@@ -36,4 +40,17 @@ public interface EventStore extends EventBus {
      */
     DomainEventStream readEvents(String aggregateIdentifier);
 
+    default DomainEventStream readEvents(String aggregateIdentifier, long fromVersion) {
+        DomainEventStream domainEventStream = readEvents(aggregateIdentifier);
+
+        List<DomainEventMessage<?>> subset = new ArrayList<>();
+
+        domainEventStream.forEachRemaining(domainEventMessage -> {
+            if (domainEventMessage.getSequenceNumber() >= fromVersion) {
+                subset.add(domainEventMessage);
+            }
+        });
+
+        return DomainEventStream.of(subset.iterator());
+    }
 }
