@@ -6,7 +6,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.thoughtworks.xstream.XStream;
 import org.axonframework.eventhandling.EventMessage;
 import org.axonframework.eventhandling.TrackedEventMessage;
 import org.axonframework.eventsourcing.DomainEventMessage;
@@ -26,13 +25,12 @@ public class CassandraEventStorageStrategy {
 	public static final String TIMESTAMP = "timestamp";
 	public static final String PAYLOAD_TYPE = "payload_type";
 	public static final String PAYLOAD = "payload";
+	public static final String EVENT_IDENTIFIER = "event_identifier";
 
 	private static final String KEYSPACE_NAME = "axon_events";
 	private static final String DOMAIN_EVENTS_CF_NAME = "domain_event_entry";
 	private static final String SNAPSHOT_EVENTS_CF_NAME = "snapshot_domain_event_entry";
 	private static final String SAGA_EVENTS_CF_NAME = "saga_entry";
-
-	private static final XStream converter = new XStream();
 
 	private final Session session;
 	private final Serializer serializer;
@@ -45,11 +43,13 @@ public class CassandraEventStorageStrategy {
 	public void appendEvents(List<? extends EventMessage<?>> events) {
 		BatchStatement statement = new BatchStatement();
 		events.forEach(event -> {
+			DomainEventMessage genericDomainEventMessage = (DomainEventMessage) event;
 			statement.add(QueryBuilder.insertInto(KEYSPACE_NAME, DOMAIN_EVENTS_CF_NAME)
-					.value(AGGREGATE_IDENTIFIER, UUID.fromString(event.getIdentifier()))
-					.value(TIMESTAMP, event.getTimestamp().toEpochMilli())
-					.value(PAYLOAD_TYPE, event.getPayloadType().getName())
-					.value(PAYLOAD, getBytes(event))
+					.value(AGGREGATE_IDENTIFIER, UUID.fromString(genericDomainEventMessage.getAggregateIdentifier()))
+					.value(TIMESTAMP, genericDomainEventMessage.getTimestamp().toEpochMilli())
+					.value(PAYLOAD_TYPE, genericDomainEventMessage.getPayloadType().getName())
+					.value(PAYLOAD, getBytes(genericDomainEventMessage))
+					//.value(EVENT_IDENTIFIER, genericDomainEventMessage.getIdentifier()) //TODO
 					.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM));
 		});
 		session.execute(statement);
@@ -79,7 +79,13 @@ public class CassandraEventStorageStrategy {
 	}
 
 	public void storeSnapshot(DomainEventMessage<?> snapshot) {
-
+			QueryBuilder.insertInto(KEYSPACE_NAME, DOMAIN_EVENTS_CF_NAME)
+					.value(AGGREGATE_IDENTIFIER, UUID.fromString(snapshot.getAggregateIdentifier()))
+					.value(TIMESTAMP, snapshot.getTimestamp().toEpochMilli())
+					.value(PAYLOAD_TYPE, snapshot.getPayloadType().getName())
+					.value(PAYLOAD, getBytes(snapshot))
+					//.value(EVENT_IDENTIFIER, genericDomainEventMessage.getIdentifier()) //TODO
+					.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	public Optional<DomainEventMessage<?>> readSnapshot(String aggregateIdentifier) {
@@ -87,8 +93,9 @@ public class CassandraEventStorageStrategy {
 	}
 
 	private ByteBuffer getBytes(EventMessage<?> event){
-		//TODO revisit this
-		return ByteBuffer.wrap(converter.toXML(event.getPayload()).getBytes());
+		//TODO revisit this mechanism of wrapping it to String all the time
+		return ByteBuffer.wrap(serializer.serialize(event.getPayload(), String.class)
+			.getData().getBytes());
 	}
 
 

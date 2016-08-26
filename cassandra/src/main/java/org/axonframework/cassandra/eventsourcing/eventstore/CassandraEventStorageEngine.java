@@ -44,6 +44,6 @@ public class CassandraEventStorageEngine implements EventStorageEngine {
 
 	@Override
 	public Optional<DomainEventMessage<?>> readSnapshot(String aggregateIdentifier) {
-		return null;
+		return Optional.empty();
 	}
 }

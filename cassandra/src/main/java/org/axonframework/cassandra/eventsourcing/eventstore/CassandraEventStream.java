@@ -2,16 +2,14 @@ package org.axonframework.cassandra.eventsourcing.eventstore;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.thoughtworks.xstream.XStream;
-import org.axonframework.common.io.IOUtils;
 import org.axonframework.eventsourcing.DomainEventMessage;
 import org.axonframework.eventsourcing.GenericDomainEventMessage;
 import org.axonframework.eventsourcing.eventstore.DomainEventStream;
 import org.axonframework.messaging.MetaData;
+import org.axonframework.serialization.SerializedType;
 import org.axonframework.serialization.Serializer;
+import org.axonframework.serialization.SimpleSerializedObject;
 
-import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,12 +22,10 @@ public class CassandraEventStream implements DomainEventStream {
 
 	private final ResultSet resultSet;
 	private final Serializer serializer;
-	private final XStream xStream;
 
 	public CassandraEventStream(Serializer serializer, ResultSet resultSet){
 		this.resultSet = resultSet;
 		this.serializer = serializer;
-		this.xStream = new XStream();
 	}
 
 	@Override
@@ -55,8 +51,31 @@ public class CassandraEventStream implements DomainEventStream {
 		UUID aggregateId = one.getUUID(AGGREGATE_IDENTIFIER);
 		Long timestampAndSequenceNr = one.getLong(TIMESTAMP);
 		String type = one.getString(PAYLOAD_TYPE);
-		ByteBuffer payload = one.getBytes(PAYLOAD);
-		Object o = xStream.fromXML(new ByteArrayInputStream(payload.array()));
-		return new GenericDomainEventMessage(type, aggregateId.toString(), timestampAndSequenceNr, o, MetaData.emptyInstance(), UUID.randomUUID().toString(), Instant.ofEpochMilli(timestampAndSequenceNr));
+		try {
+			Object deserializedObject = getDeserializedObject(one, type);
+			return new GenericDomainEventMessage(
+				type,
+				aggregateId.toString(),
+				timestampAndSequenceNr,
+				deserializedObject,
+				MetaData.emptyInstance(),
+				UUID.randomUUID().toString(),
+				Instant.ofEpochMilli(timestampAndSequenceNr)
+			);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private Object getDeserializedObject(Row one, String type) throws ClassNotFoundException {
+		Class<?> classType = Class.forName(type);
+		SerializedType serializedType = serializer.typeForClass(classType);
+		//TODO revisit this mechanism of wrapping it to String all the time
+		SimpleSerializedObject<String> stringSimpleSerializedObject = new SimpleSerializedObject<>(
+			new String(one.getBytes(PAYLOAD).array()),
+			String.class,
+			serializedType
+		);
+		return serializer.deserialize(stringSimpleSerializedObject);
 	}
 }

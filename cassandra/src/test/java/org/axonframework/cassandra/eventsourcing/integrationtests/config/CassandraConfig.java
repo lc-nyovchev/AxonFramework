@@ -2,6 +2,7 @@ package org.axonframework.cassandra.eventsourcing.integrationtests.config;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import org.axonframework.cassandra.eventsourcing.integrationtests.cassandra.EmbeddedCassandra;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ public class CassandraConfig {
 	public Cluster getCluster(){
 		Cluster cluster = Cluster.builder()
 				.addContactPoint("localhost")
+				.withProtocolVersion(ProtocolVersion.V3) //cass 3+ supports 4
 				.withLoadBalancingPolicy(
 						DCAwareRoundRobinPolicy.builder()
 								.withLocalDc("DC1")
