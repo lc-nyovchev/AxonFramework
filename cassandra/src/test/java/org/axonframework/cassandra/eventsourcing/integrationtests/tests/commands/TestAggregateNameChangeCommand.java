@@ -5,9 +5,12 @@ import org.axonframework.commandhandling.TargetAggregateIdentifier;
 
 import java.util.UUID;
 
+/**
+ * @author Nikola Yovchev
+ */
 @Value
-public class SomeAggegateNameChangeCommand {
+public class TestAggregateNameChangeCommand {
 	@TargetAggregateIdentifier
-	private UUID someAggregateId;
+	private UUID testAggregateId;
 	private String name;
 }

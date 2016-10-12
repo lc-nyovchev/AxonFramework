@@ -14,6 +14,12 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * An embedded cassandra starter that looks in the resource directory for the definition of keyspaces and column families and
+ * creates them upon startup. Upon dying, the deamon clears up the created keyspaces/column families
+ *
+ * @author Nikola Yovchev
+ */
 @Slf4j
 public class EmbeddedCassandra {
 

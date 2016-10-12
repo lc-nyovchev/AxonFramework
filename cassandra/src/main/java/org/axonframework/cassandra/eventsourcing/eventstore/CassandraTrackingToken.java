@@ -7,6 +7,10 @@ import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 
+/**
+ * A token that provides no guarantee on nexts but provides guarantee on comparison
+ * @author Nikola Yovchev
+ */
 @Value
 public class CassandraTrackingToken implements TrackingToken {
 
@@ -28,7 +32,7 @@ public class CassandraTrackingToken implements TrackingToken {
 		}
 		CassandraTrackingToken otherTokenAsCassandraToken = (CassandraTrackingToken) otherToken;
 		return comparing(CassandraTrackingToken::getTimestamp,
-				nullsFirst(naturalOrder()
+			nullsFirst(naturalOrder()
 		)).compare(this, otherTokenAsCassandraToken);
 	}
 }

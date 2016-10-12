@@ -10,6 +10,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * A helper class that has methods for creating and removing cassandra-related directories upon startup of the
+ * {@link EmbeddedCassandra}
+ * @author Nikola Yovchev
+ * @see EmbeddedCassandra
+ */
 public class EmbeddedCassandraCleaner {
 	/**
 	 * Creates all data dir if they don't exist and cleans them

@@ -5,8 +5,11 @@ import org.axonframework.commandhandling.TargetAggregateIdentifier;
 
 import java.util.UUID;
 
+/**
+ * @author Nikola Yovchev
+ */
 @Value
-public class SomeAggregateCreateCommand {
+public class TestAggregateCreateCommand {
 	@TargetAggregateIdentifier
-	private UUID someAggregateId;
+	private UUID testAggregateId;
 }

@@ -5,6 +5,9 @@ import org.axonframework.eventsourcing.DomainEventMessage;
 import org.axonframework.eventsourcing.GenericDomainEventMessage;
 import org.axonframework.eventsourcing.eventstore.TrackingToken;
 
+/**
+ * @author Nikola Yovchev
+ */
 public class CassandraTrackedEventMessage<T> extends GenericDomainEventMessage<T> implements TrackedEventMessage<T> {
 
 	private static final long serialVersionUID = 1863887388011622937L;

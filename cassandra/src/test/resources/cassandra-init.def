@@ -1,2 +1,3 @@
 CREATE KEYSPACE axon_events WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'DC1' : 1 };
-CREATE TABLE IF NOT EXISTS axon_events.domain_event_entry ( aggregate_identifier uuid, timestamp bigint, payload_type text, metadata blob, payload blob, payload_revision text, PRIMARY KEY (aggregate_identifier, timestamp) );
+CREATE TABLE IF NOT EXISTS axon_events.domain_event_entry ( aggregate_identifier uuid, timestamp bigint, payload_type text, payload blob, payload_revision text, event_identifier text, metadata map<text, text>, PRIMARY KEY (aggregate_identifier, timestamp) );
+CREATE TABLE IF NOT EXISTS axon_events.snapshot_domain_event_entry ( aggregate_identifier uuid, timestamp bigint, payload_type text, payload blob, payload_revision text, SNAPSHOT_IDENTIFIER text, PRIMARY KEY (aggregate_identifier, timestamp) );

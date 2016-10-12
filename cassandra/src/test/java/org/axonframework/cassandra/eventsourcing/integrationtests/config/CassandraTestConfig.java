@@ -11,8 +11,11 @@ import org.springframework.context.annotation.DependsOn;
 
 import java.io.IOException;
 
+/**
+ * @author Nikola Yovchev
+ */
 @Configuration
-public class CassandraConfig {
+public class CassandraTestConfig {
 
 	private static final String EMBEDDED_CASSANDRA_BEAN_NAME = "EmbeddedCassandra";
 

@@ -14,6 +14,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * A Storage engine that stores data in a Cassandra Event Store using a {@link CassandraEventStorageStrategy}
+ * @see CassandraEventStorageStrategy
+ * @author Nikola Yovchev
+ */
 public class CassandraEventStorageEngine implements EventStorageEngine {
 
 	private CassandraEventStorageStrategy cassandraEventStorageStrategy;
@@ -29,7 +34,7 @@ public class CassandraEventStorageEngine implements EventStorageEngine {
 
 	@Override
 	public void storeSnapshot(DomainEventMessage<?> snapshot) {
-
+		this.cassandraEventStorageStrategy.storeSnapshot(snapshot);
 	}
 
 	@Override
@@ -44,6 +49,6 @@ public class CassandraEventStorageEngine implements EventStorageEngine {
 
 	@Override
 	public Optional<DomainEventMessage<?>> readSnapshot(String aggregateIdentifier) {
-		return Optional.empty();
+		return this.cassandraEventStorageStrategy.readSnapshot(aggregateIdentifier);
 	}
 }
